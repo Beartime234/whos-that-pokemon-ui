@@ -1,0 +1,45 @@
+version: 2.1
+jobs: # basic units of work in a run
+  deploy:
+    docker:
+      - image: circleci/node:8.10
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run:
+          name: Install Serverless CLI and dependencies
+          command: |
+            sudo npm i -g serverless
+            npm install
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-
+
+      - run:
+          name: Build
+          command: |
+            npm run build
+
+      - run:
+          name: Deploy application
+          command: sls deploy -s dev
+workflows:
+  version: 2
+  full_run:
+    jobs:
+      - deploy:
+          filters:
+            branches:
+              only: master
