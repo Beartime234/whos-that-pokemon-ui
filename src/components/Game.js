@@ -14,6 +14,7 @@ class Game extends Component {
         this.state = {
             guess: props.guess,
             currentPokemonImage: props.currentPokemonImage,
+            nextPokemonImage: props.nextPokemonImage,
             score: props.score,
             isCorrect: props.isCorrect
         };
@@ -27,16 +28,16 @@ class Game extends Component {
 
     async componentDidMount() {
         const session = await gameEngine.gameSession.session;
-        this.setPokemonImage(session['CurrentPokemon']['BWImageUrl']);
+        this.setPokemonImage(session['CurrentPokemon']['BWImageUrl'], session['NextPokemon']['BWImageUrl']);
         this.setScore(session['Score']);
     }
 
-    setPokemonImage(imageUrl) {
-        this.setState(() => ({ currentPokemonImage: imageUrl}));  // Setting image
+    setPokemonImage(currentPokemonImageUrl, nextPokemonImageUrl) {
+        this.setState(() => ({ currentPokemonImage: currentPokemonImageUrl, nextPokemonImage: nextPokemonImageUrl}));  // Setting image
     }
 
     setScore(score) {
-        this.setState(() => ({ score: score}));  // Setting s
+        this.setState(() => ({ score: score}));  // Setting score
     }
 
     async guessPokemon() {
@@ -44,7 +45,7 @@ class Game extends Component {
         const correct = guessOutcome['Correct'];
         if (correct === true) {
             this.setState(() => ({ isCorrect: true }));
-            this.setPokemonImage(guessOutcome['Session']['CurrentPokemon']['BWImageUrl']);
+            this.setPokemonImage(guessOutcome['Session']['CurrentPokemon']['BWImageUrl'], guessOutcome['Session']['NextPokemon']['BWImageUrl']);
             this.setScore(guessOutcome['Session']['Score']);
             this.setState(() => ({ guess: '' }));
         } else {
@@ -54,7 +55,7 @@ class Game extends Component {
 
     async skipPokemon() {
         const guessOutcome = await gameEngine.guess('SKIP');
-        this.setPokemonImage(guessOutcome['Session']['CurrentPokemon']['BWImageUrl']);
+        this.setPokemonImage(guessOutcome['Session']['CurrentPokemon']['BWImageUrl'], guessOutcome['Session']['NextPokemon']['BWImageUrl']);
         this.setScore(guessOutcome['Session']['Score']);
         this.setState(() => ({ guess: '' }));
     }
@@ -111,6 +112,11 @@ class Game extends Component {
                                         loader={<ClipLoader color={'black'} size={50}/>}
                                     />
                                 </div>
+                                <div className="game-display" style={{'visibility': 'hidden', 'width': 0, 'height': 0, 'overflow': 'hidden'}}>
+                                    <Img
+                                        src={[this.state.nextPokemonImage]}
+                                    />
+                                </div>
                                 <div className="form-group">
                                     <input type="string" className="form-control game-display "
                                         style={{color: this.state.isCorrect ? 'black': 'red'}}
@@ -156,7 +162,7 @@ class Game extends Component {
 Game.defaultProps = {
     guess: '',
     currentPokemonImage: '',
-    pokemonIsLoading: true,
+    nextPokemonImage: '',
     score: 0,
     isCorrect: true
 };
@@ -164,7 +170,7 @@ Game.defaultProps = {
 Game.propTypes = {
     guess: PropTypes.string,
     currentPokemonImage: PropTypes.string,
-    pokemonIsLoading: PropTypes.bool,
+    nextPokemonImage: PropTypes.string,
     score: PropTypes.number,
     isCorrect: PropTypes.bool
 };
