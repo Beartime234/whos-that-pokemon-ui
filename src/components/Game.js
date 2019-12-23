@@ -19,6 +19,7 @@ class Game extends Component {
         };
 
         this.guessPokemon = this.guessPokemon.bind(this);
+        this.skipPokemon = this.skipPokemon.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleKeyPress = this.handleKeyPress.bind(this);
         this.startGame = this.startGame.bind(this);
@@ -52,6 +53,9 @@ class Game extends Component {
     }
 
     async skipPokemon() {
+        const guessOutcome = await gameEngine.guess('SKIP');
+        this.setPokemonImage(guessOutcome['Session']['CurrentPokemon']['BWImageUrl']);
+        this.setScore(guessOutcome['Session']['Score']);
         this.setState(() => ({ guess: '' }));
     }
 
@@ -120,7 +124,7 @@ class Game extends Component {
                                 </div>
                                 <div className="form-group">
                                     <button className="btn btn-lg btn-danger  btn-block"
-                                        onClick={this.guessPokemon}>Skip</button>
+                                        onClick={this.skipPokemon}>Skip</button>
                                 </div>
                             </div>
                         }
