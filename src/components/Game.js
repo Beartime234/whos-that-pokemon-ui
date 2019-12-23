@@ -14,7 +14,6 @@ class Game extends Component {
         this.state = {
             guess: props.guess,
             currentPokemonImage: props.currentPokemonImage,
-            pokemonIsLoading: props.pokemonIsLoading,
             score: props.score,
             isCorrect: props.isCorrect
         };
@@ -32,8 +31,7 @@ class Game extends Component {
     }
 
     setPokemonImage(imageUrl) {
-        this.setState(() => ({ pokemonIsLoading: true}));
-        this.setState(() => ({ currentPokemonImage: imageUrl, pokemonIsLoading: false}));  // Setting image
+        this.setState(() => ({ currentPokemonImage: imageUrl}));  // Setting image
     }
 
     setScore(score) {

@@ -1,8 +1,4 @@
-import axios from 'axios';
-
-const apiUrl = 'https://api.whosthatpokemon.xyz/v1/';
-const startApiPath = 'start';
-const checkApiPath = 'check';
+import {start, check} from './Api';
 
 class GameSession {
 
@@ -11,10 +7,13 @@ class GameSession {
     }
 
     async refreshSession() {
-        let startApiUrl = apiUrl + startApiPath;
-        const res = await axios.post(startApiUrl, JSON.stringify({}), {headers: {'content-type': 'application/json'}});
-        localStorage.setItem('SessionID', res.data['Session']['SessionID']);
-        return res.data['Session'];
+        let res = await start();
+        this.setSessionData(res['Session']['SessionID']);
+        return res['Session'];
+    }
+
+    setSessionData(sessionID){
+        localStorage.setItem('SessionID', sessionID);
     }
 }
 
@@ -29,16 +28,7 @@ class GameEngine {
     }
 
     async guess(userGuess) {
-        let checkApiUrl = apiUrl + checkApiPath;
-        let sessionID = localStorage.getItem('SessionID');
-        const res = await axios.post(checkApiUrl, JSON.stringify(
-            {
-                SessionId: sessionID,
-                PokemonNameGuess: userGuess
-            }
-        ),
-        {headers: {'content-type': 'application/json'}});
-        return res.data;
+        return await check(userGuess);
     }
 }
 
