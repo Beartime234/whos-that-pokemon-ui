@@ -10,7 +10,7 @@ async function start() {
     return res.data;
 }
 
-export async function check(userGuess) {
+async function check(userGuess) {
     const checkApiUrl = apiUrl + checkApiPath;
     const sessionID = localStorage.getItem('SessionID');
     const res = await axios.post(checkApiUrl, JSON.stringify(
@@ -24,5 +24,6 @@ export async function check(userGuess) {
 }
 
 export {
-    start
+    start,
+    check
 };

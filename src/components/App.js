@@ -5,7 +5,7 @@ import Game from './Game';
 const App = () => {
     return (
         <div>
-            <Header title="Who's That Pokemon!" />
+            <Header title="Who's That Pokémon!" />
             <div className="mt-5">
                 <Game />
             </div>

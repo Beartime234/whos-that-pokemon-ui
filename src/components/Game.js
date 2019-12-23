@@ -110,7 +110,7 @@ class Game extends Component {
                                 <div className="form-group">
                                     <input type="string" className="form-control game-display "
                                         style={{color: this.state.isCorrect ? 'black': 'red'}}
-                                        placeholder="Pokemon Name"
+                                        placeholder="Pokémon Name"
                                         onChange={this.handleChange}
                                         onKeyPress={this.handleKeyPress}
                                         value={this.state.guess} />
