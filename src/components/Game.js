@@ -100,13 +100,14 @@ class Game extends Component {
                                     <ul className="nav nav-pills nav-fill">
                                     </ul>
                                 </div>
-
+                                <div className="game-display score-display">
+                                    {this.state.score}
+                                </div>
                                 <div className="game-display">
                                     <Img
                                         src={[this.state.currentPokemonImage]}
                                         loader={<ClipLoader color={'black'} size={50}/>}
                                     />
-
                                 </div>
                                 <div className="form-group">
                                     <input type="string" className="form-control game-display "
