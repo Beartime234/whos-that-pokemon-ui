@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { GameEngine } from '../lib/GameEngine';
 import Img from 'react-image';
-import { Circle } from 'react-spinners-css';
+import ClipLoader from 'react-spinners/ClipLoader';
 
 const gameEngine = new GameEngine();
 
@@ -15,11 +15,13 @@ class Game extends Component {
             guess: props.guess,
             currentPokemonImage: props.currentPokemonImage,
             pokemonIsLoading: props.pokemonIsLoading,
-            score: props.score
+            score: props.score,
+            isCorrect: props.isCorrect
         };
 
         this.guessPokemon = this.guessPokemon.bind(this);
         this.handleChange = this.handleChange.bind(this);
+        this.handleKeyPress = this.handleKeyPress.bind(this);
         this.startGame = this.startGame.bind(this);
     }
 
@@ -42,18 +44,41 @@ class Game extends Component {
         const guessOutcome = await gameEngine.guess(this.state.guess);
         const correct = guessOutcome['Correct'];
         if (correct === true) {
+            this.setState(() => ({ isCorrect: true }));
             this.setPokemonImage(guessOutcome['Session']['CurrentPokemon']['BWImageUrl']);
             this.setScore(guessOutcome['Session']['Score']);
             this.setState(() => ({ guess: '' }));
+        } else {
+            this.setState(() => ({ isCorrect: false }));
         }
     }
 
-    handleChange(e) {
-        const guess = e.target.value;
-
-        this.setState(() => ({ guess: guess }));
-
+    async skipPokemon() {
+        this.setState(() => ({ guess: '' }));
     }
+
+    handleChange(event) {
+        const guess = event.target.value;
+        if (guess === '/') {
+            event.target.value = '';
+            this.setState(() => ({ guess: '' }));
+        } else {
+            this.setState(() => ({ guess: guess }));
+        }
+        if (this.state.isCorrect === false) {
+            this.setState(() => ({ isCorrect: true }));
+        }
+    }
+
+    async handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            await this.guessPokemon();
+        }
+        if (event.key === '/') {
+            await this.skipPokemon();
+        }
+    }
+
 
     outcomeClass() {
         return 'indicator--blue fa fa-thermometer-0 fa-2x';
@@ -75,21 +100,24 @@ class Game extends Component {
                                     <ul className="nav nav-pills nav-fill">
                                     </ul>
                                 </div>
+
                                 <div className="game-display">
                                     <Img
                                         src={[this.state.currentPokemonImage]}
-                                        loader={<Circle/>}
+                                        loader={<ClipLoader color={'black'} size={50}/>}
                                     />
+
                                 </div>
                                 <div className="form-group">
-                                    <input type="string" className="form-control game-display"
+                                    <input type="string" className="form-control game-display "
+                                        style={{color: this.state.isCorrect ? 'black': 'red'}}
                                         placeholder="Pokemon Name"
                                         onChange={this.handleChange}
+                                        onKeyPress={this.handleKeyPress}
                                         value={this.state.guess} />
                                 </div>
                                 <div className="form-group">
-                                    <button className="btn btn-lg btn-success btn-block"
-                                        onClick={this.guessPokemon}>Guess</button>
+                                    <button onClick={this.guessPokemon} className="btn btn-lg btn-success btn-block">Guess</button>
                                 </div>
                                 <div className="form-group">
                                     <button className="btn btn-lg btn-danger  btn-block"
@@ -126,7 +154,8 @@ Game.defaultProps = {
     guess: '',
     currentPokemonImage: '',
     pokemonIsLoading: true,
-    score: 0
+    score: 0,
+    isCorrect: true
 };
 
 Game.propTypes = {
@@ -134,6 +163,7 @@ Game.propTypes = {
     currentPokemonImage: PropTypes.string,
     pokemonIsLoading: PropTypes.bool,
     score: PropTypes.number,
+    isCorrect: PropTypes.bool
 };
 
 export default Game;
