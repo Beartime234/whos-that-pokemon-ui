@@ -7,8 +7,8 @@ class GameSession {
     }
 
     async refreshSession() {
-        let currentSession = this.getCurrentSession();
-        if (currentSession !== {}) {
+        let currentSession = await this.getCurrentSession();
+        if (currentSession !== null) {
             return currentSession;
         }
         return await this.getNewSession();
@@ -19,7 +19,7 @@ class GameSession {
             let res = await check('');
             return res['Session'];
         }
-        return {};
+        return null;
     }
 
     async getNewSession() {
