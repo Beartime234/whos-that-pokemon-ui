@@ -7,6 +7,22 @@ class GameSession {
     }
 
     async refreshSession() {
+        let currentSession = this.getCurrentSession();
+        if (currentSession !== {}) {
+            return currentSession;
+        }
+        return await this.getNewSession();
+    }
+
+    async getCurrentSession() {
+        if (localStorage.getItem('SessionID') !== null) {  // Has the user already got a session? If so we load it
+            let res = await check('');
+            return res['Session'];
+        }
+        return {};
+    }
+
+    async getNewSession() {
         let res = await start();
         this.setSessionData(res['Session']['SessionID']);
         return res['Session'];
@@ -20,11 +36,11 @@ class GameSession {
 class GameEngine {
 
     constructor() {
-        this.startNewGame();
+        this.gameSession = new GameSession();
     }
 
     async startNewGame() {
-        this.gameSession = new GameSession();
+        return await this.gameSession.getNewSession();
     }
 
     async guess(userGuess) {

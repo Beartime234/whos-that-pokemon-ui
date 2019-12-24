@@ -3,17 +3,53 @@ import PropTypes from 'prop-types';
 import { GameEngine } from '../lib/GameEngine';
 import Img from 'react-image';
 import ClipLoader from 'react-spinners/ClipLoader';
+import Popover from 'react-bootstrap/Popover';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Button from 'react-bootstrap/Button';
+import Badge from 'react-bootstrap/Badge';
+
+const instructionsPopover = (
+    <Popover id="popover-basic">
+        <Popover.Title as="h3">Instructions</Popover.Title>
+        <Popover.Content>
+            Type the Pokémon&apos;s name in the input box below. Select guess when you think you are correct. The color of the text will turn red if your wrong.
+            If you are correct a new Pokémon will be shown. Hit skip if you do not know the answer.<br/>
+            <strong>Shortcuts</strong> <br/>
+            Enter -&gt; Submit <br/>
+            / -&gt; Skip
+        </Popover.Content>
+    </Popover>
+);
+
+const scorePopover = (
+    <Popover id="popover-basic">
+        <Popover.Title as="h3">Score</Popover.Title>
+        <Popover.Content>
+            You get +1 for every correct answer and -1 for every skip. You cannot go below 0.
+        </Popover.Content>
+    </Popover>
+);
+
+const restartPopover = (
+    <Popover id="popover-basic">
+        <Popover.Title as="h3">Restart</Popover.Title>
+        <Popover.Content>
+            This restarts the game. Be careful your score cannot be recovered.
+        </Popover.Content>
+    </Popover>
+);
 
 const gameEngine = new GameEngine();
 
 class Game extends Component {
 
     constructor(props) {
-        super();
+        super(props);
 
         this.state = {
             guess: props.guess,
             currentPokemonImage: props.currentPokemonImage,
+            currentPokemonName: props.currentPokemonName,
             nextPokemonImage: props.nextPokemonImage,
             score: props.score,
             isCorrect: props.isCorrect
@@ -21,6 +57,7 @@ class Game extends Component {
 
         this.guessPokemon = this.guessPokemon.bind(this);
         this.skipPokemon = this.skipPokemon.bind(this);
+        this.restartGame = this.restartGame.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleKeyPress = this.handleKeyPress.bind(this);
         this.startGame = this.startGame.bind(this);
@@ -45,9 +82,8 @@ class Game extends Component {
         const correct = guessOutcome['Correct'];
         if (correct === true) {
             this.setState(() => ({ isCorrect: true }));
-            this.setPokemonImage(guessOutcome['Session']['CurrentPokemon']['BWImageUrl'], guessOutcome['Session']['NextPokemon']['BWImageUrl']);
-            this.setScore(guessOutcome['Session']['Score']);
-            this.setState(() => ({ guess: '' }));
+            console.log('hi');
+            this.updateGame(guessOutcome['Session'], '');
         } else {
             this.setState(() => ({ isCorrect: false }));
         }
@@ -55,9 +91,18 @@ class Game extends Component {
 
     async skipPokemon() {
         const guessOutcome = await gameEngine.guess('SKIP');
-        this.setPokemonImage(guessOutcome['Session']['CurrentPokemon']['BWImageUrl'], guessOutcome['Session']['NextPokemon']['BWImageUrl']);
-        this.setScore(guessOutcome['Session']['Score']);
-        this.setState(() => ({ guess: '' }));
+        this.updateGame(guessOutcome['Session'], '');
+    }
+
+    async restartGame() {
+        const session = await gameEngine.startNewGame();
+        this.updateGame(session, '');
+    }
+
+    updateGame(session, guess) {
+        this.setPokemonImage(session['CurrentPokemon']['BWImageUrl'], session['NextPokemon']['BWImageUrl']);
+        this.setScore(session['Score']);
+        this.setState(() => ({ guess: guess }));
     }
 
     handleChange(event) {
@@ -83,39 +128,48 @@ class Game extends Component {
     }
 
 
-    outcomeClass() {
-        return 'indicator--blue fa fa-thermometer-0 fa-2x';
-    }
-
     startGame() {
         gameEngine.startNewGame();
         this.setState(() => ({ outcome: '', guess: 0 }));
     }
 
     render() {
+
         return (
             <div className="container">
                 <div className="row">
-                    <div className="col-md-4 mx-auto">
+                    <div className="col-md-5 mx-auto">
                         {
-                            this.state.outcome !== 'you win' && <div>
-                                <div className="form-group">
-                                    <ul className="nav nav-pills nav-fill">
-                                    </ul>
+                            <div>
+                                <div className="row mx-auto">
+                                    <div className="col-md-4 mx-auto game-display score-display">
+                                        <OverlayTrigger placement="left" overlay={scorePopover}>
+                                            <Button variant="info">Score <Badge variant="light">{this.state.score}</Badge></Button>
+                                        </OverlayTrigger>
+                                    </div>
+                                    <div className="col-md-4 mx-auto game-display restart-display">
+                                        <OverlayTrigger placement="top" overlay={restartPopover}>
+                                            <Button onClick={this.restartGame} variant="danger">Restart</Button>
+                                        </OverlayTrigger>
+                                    </div>
+                                    <div className="col-md-4 mx-auto game-display instruction-display">
+                                        <OverlayTrigger placement="right" overlay={instructionsPopover}>
+                                            <Button variant="info">Instructions</Button>
+                                        </OverlayTrigger>
+                                    </div>
                                 </div>
-                                <div className="game-display score-display">
-                                    {this.state.score}
-                                </div>
-                                <div className="game-display">
-                                    <Img
-                                        src={[this.state.currentPokemonImage]}
-                                        loader={<ClipLoader color={'black'} size={50}/>}
-                                    />
-                                </div>
-                                <div className="game-display" style={{'visibility': 'hidden', 'width': 0, 'height': 0, 'overflow': 'hidden'}}>
-                                    <Img
-                                        src={[this.state.nextPokemonImage]}
-                                    />
+                                <div className="row mx-auto">
+                                    <div className="col-md-6 mx-auto game-display pokemon-image">
+                                        <Img
+                                            src={[this.state.currentPokemonImage]}
+                                            loader={<ClipLoader color={'black'} size={50}/>}
+                                        />
+                                    </div>
+                                    <div style={{'visibility': 'hidden', 'width': 0, 'height': 0, 'overflow': 'hidden'}}>
+                                        <Img
+                                            src={[this.state.nextPokemonImage]}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="form-group">
                                     <input type="string" className="form-control game-display "
@@ -134,24 +188,6 @@ class Game extends Component {
                                 </div>
                             </div>
                         }
-                        {
-                            this.state.outcome && this.state.outcome !== 'you win' &&
-                            <div className="form-group">
-                                <div className="game-outcome">
-                                    <p>{this.state.outcome}</p>
-                                    <i className={`${this.outcomeClass()}`} />
-                                </div>
-                            </div>
-                        }
-                        {
-                            this.state.outcome === 'you win' && <div className="form-group">
-                                <div className="game-outcome">
-                                    <p>{this.state.outcome}</p>
-                                    <button className="btn btn-lg btn-success btn-block"
-                                        onClick={this.startGame}>PLAY AGAIN</button>
-                                </div>
-                            </div>
-                        }
                     </div>
                 </div>
             </div>
@@ -162,6 +198,7 @@ class Game extends Component {
 Game.defaultProps = {
     guess: '',
     currentPokemonImage: '',
+    currentPokemonName: '',
     nextPokemonImage: '',
     score: 0,
     isCorrect: true
@@ -170,6 +207,7 @@ Game.defaultProps = {
 Game.propTypes = {
     guess: PropTypes.string,
     currentPokemonImage: PropTypes.string,
+    currentPokemonName: PropTypes.string,
     nextPokemonImage: PropTypes.string,
     score: PropTypes.number,
     isCorrect: PropTypes.bool
