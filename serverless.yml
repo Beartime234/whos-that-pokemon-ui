@@ -7,6 +7,7 @@ custom:
   siteName: whosthatpokemon.xyz
   aliasDNSName: s3-website-us-east-1.amazonaws.com
   aliasHostedZoneId: Z2O1EMRO9K5GLX
+  certificateArn: arn:aws:acm:us-east-1:934679804324:certificate/e9d4580c-1ff4-4836-9a7e-9a9e532be2e6
   s3Sync:
     - bucketName: ${self:custom.siteName}
       localDir: public
@@ -19,16 +20,47 @@ provider:
 
 resources:
   Resources:
-#    DnsRecord:
-#      Type: "AWS::Route53::RecordSet"
-#      Properties:
-#        AliasTarget:
-#          DNSName: ${self:custom.aliasDNSName}
-#          HostedZoneId: ${self:custom.aliasHostedZoneId}
-#        HostedZoneName: ${self:custom.siteName}.
-#        Name:
-#          Ref: StaticSite
-#        Type: 'A'
+    StaticSiteCloudfront:
+      Type: AWS::CloudFront::Distribution
+      DependsOn:
+        - StaticSite
+      Properties:
+        DistributionConfig:
+          Comment: CloudFront to S3
+          Origins:
+            - DomainName: !Join
+                - '.'
+                - - ${self:custom.siteName}
+                  - s3-website-us-east-1.amazonaws.com
+              Id: S3RootOrigin
+              CustomOriginConfig:
+                HTTPPort: '80'
+                HTTPSPort: '443'
+                OriginProtocolPolicy: http-only
+          Enabled: true
+          HttpVersion: 'http2'
+          DefaultRootObject: index.html
+          Aliases:
+            - ${self:custom.siteName}
+          DefaultCacheBehavior:
+            AllowedMethods:
+              - HEAD
+              - DELETE
+              - POST
+              - GET
+              - OPTIONS
+              - PUT
+              - PATCH
+            Compress: true
+            TargetOriginId: S3RootOrigin
+            ForwardedValues:
+              QueryString: true
+              Cookies:
+                Forward: none
+            ViewerProtocolPolicy: redirect-to-https
+          ViewerCertificate:
+            AcmCertificateArn: ${self:custom.certificateArn}
+            SslSupportMethod: sni-only
     StaticSite:
       Type: AWS::S3::Bucket
       Properties:

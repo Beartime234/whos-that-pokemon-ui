@@ -34,7 +34,7 @@ jobs: # basic units of work in a run
 
       - run:
           name: Deploy application
-          command: sls deploy -s dev
+          command: sls deploy -s prod
 workflows:
   version: 2
   full_run:
