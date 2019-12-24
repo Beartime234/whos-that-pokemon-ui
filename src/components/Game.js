@@ -13,7 +13,7 @@ const instructionsPopover = (
         <Popover.Title as="h3">Instructions</Popover.Title>
         <Popover.Content>
             Type the Pokémon&apos;s name in the input box below. Select guess when you think you are correct. The color of the text will turn red if your wrong.
-            If you are correct a new Pokémon will be shown. Hit skip if you do not know the answer.<br/>
+            If you are correct a new Pokémon will be shown. Hit skip if you do not know the answer. The previous pokemon is shown on the upper left of the game display.<br/>
             <strong>Shortcuts</strong> <br/>
             Enter -&gt; Submit <br/>
             / -&gt; Skip
@@ -51,6 +51,8 @@ class Game extends Component {
             currentPokemonImage: props.currentPokemonImage,
             currentPokemonName: props.currentPokemonName,
             nextPokemonImage: props.nextPokemonImage,
+            prevPokemonImage: props.prevPokemonImage,
+            prevPokemonName: props.prevPokemonName,
             score: props.score,
             isCorrect: props.isCorrect
         };
@@ -65,16 +67,23 @@ class Game extends Component {
 
     async componentDidMount() {
         const session = await gameEngine.gameSession.session;
-        this.setPokemonImage(session['CurrentPokemon']['BWImageUrl'], session['NextPokemon']['BWImageUrl']);
-        this.setScore(session['Score']);
+        this.updateGame(session, '');
     }
 
-    setPokemonImage(currentPokemonImageUrl, nextPokemonImageUrl) {
-        this.setState(() => ({ currentPokemonImage: currentPokemonImageUrl, nextPokemonImage: nextPokemonImageUrl}));  // Setting image
+    setPokemonImage(currentPokemonImageUrl, nextPokemonImageUrl, prevPokemonImageUrl) {
+        this.setState(() => ({
+            currentPokemonImage: currentPokemonImageUrl,
+            nextPokemonImage: nextPokemonImageUrl,
+            prevPokemonImage: prevPokemonImageUrl,
+        }));  // Setting pokemon images
     }
 
     setScore(score) {
         this.setState(() => ({ score: score}));  // Setting score
+    }
+
+    setPrevPokemonName(name) {
+        this.setState(() => ({ prevPokemonName: name.charAt(0).toUpperCase() + name.slice(1)}));  // Setting prev pokemon name
     }
 
     async guessPokemon() {
@@ -82,7 +91,6 @@ class Game extends Component {
         const correct = guessOutcome['Correct'];
         if (correct === true) {
             this.setState(() => ({ isCorrect: true }));
-            console.log('hi');
             this.updateGame(guessOutcome['Session'], '');
         } else {
             this.setState(() => ({ isCorrect: false }));
@@ -100,8 +108,13 @@ class Game extends Component {
     }
 
     updateGame(session, guess) {
-        this.setPokemonImage(session['CurrentPokemon']['BWImageUrl'], session['NextPokemon']['BWImageUrl']);
+        let prevPokemon  = session['PreviousPokemon'];
+        if (prevPokemon === null) {
+            prevPokemon = {'OriginalImageUrl': '', 'Name': ''};
+        }
+        this.setPokemonImage(session['CurrentPokemon']['BWImageUrl'], session['NextPokemon']['BWImageUrl'], prevPokemon['OriginalImageUrl']);
         this.setScore(session['Score']);
+        this.setPrevPokemonName(prevPokemon['Name']);
         this.setState(() => ({ guess: guess }));
     }
 
@@ -159,12 +172,21 @@ class Game extends Component {
                                     </div>
                                 </div>
                                 <div className="row mx-auto">
-                                    <div className="col-md-6 mx-auto game-display pokemon-image">
+                                    <div className="col-md-3 game-display pokemon-image-prev">
+                                        <Img
+                                            src={[this.state.prevPokemonImage]}
+                                            loader={<ClipLoader color={'black'} size={25}/>}
+                                            height={100}
+                                        />
+                                        <h6>{this.state.prevPokemonName}</h6>
+                                    </div>
+                                    <div className="col-md-6 game-display pokemon-image">
                                         <Img
                                             src={[this.state.currentPokemonImage]}
                                             loader={<ClipLoader color={'black'} size={50}/>}
                                         />
                                     </div>
+                                    <div className="col-md-3 game-display pokemon-image"/>
                                     <div style={{'visibility': 'hidden', 'width': 0, 'height': 0, 'overflow': 'hidden'}}>
                                         <Img
                                             src={[this.state.nextPokemonImage]}
@@ -200,6 +222,8 @@ Game.defaultProps = {
     currentPokemonImage: '',
     currentPokemonName: '',
     nextPokemonImage: '',
+    prevPokemonImage: '',
+    prevPokemonName: '',
     score: 0,
     isCorrect: true
 };
@@ -209,6 +233,8 @@ Game.propTypes = {
     currentPokemonImage: PropTypes.string,
     currentPokemonName: PropTypes.string,
     nextPokemonImage: PropTypes.string,
+    prevPokemonImage: PropTypes.string,
+    prevPokemonName: PropTypes.string,
     score: PropTypes.number,
     isCorrect: PropTypes.bool
 };
