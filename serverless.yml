@@ -45,7 +45,7 @@ resources:
         - StaticSite
       Properties:
         DistributionConfig:
-          PriceClass: PriceClass_200
+          PriceClass: PriceClass_100
           Comment: CloudFront to S3
           Origins:
             - DomainName: !Join
