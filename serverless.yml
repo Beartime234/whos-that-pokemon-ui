@@ -6,7 +6,6 @@ plugins:
 custom:
   siteName: whosthatpokemon.xyz
   aliasDNSName: s3-website-us-east-1.amazonaws.com
-  aliasHostedZoneId: Z2O1EMRO9K5GLX
   certificateArn: arn:aws:acm:us-east-1:934679804324:certificate/e9d4580c-1ff4-4836-9a7e-9a9e532be2e6
   s3Sync:
     - bucketName: ${self:custom.siteName}
@@ -20,12 +19,33 @@ provider:
 
 resources:
   Resources:
+    WWWS3DNS:
+      Type: AWS::Route53::RecordSetGroup
+      Properties:
+        HostedZoneName: ${self:custom.siteName}.
+        RecordSets:
+          - Name: www.${self:custom.siteName}
+            Type: A
+            AliasTarget:
+              HostedZoneId: Z3AQBSTGFYJSTF
+              DNSName: ${self:custom.aliasDNSName}
+    CloudfrontDNS:
+      Type: AWS::Route53::RecordSetGroup
+      Properties:
+        HostedZoneName: ${self:custom.siteName}.
+        RecordSets:
+          - Name: ${self:custom.siteName}
+            Type: A
+            AliasTarget:
+              HostedZoneId: Z2FDTNDATAQYW2
+              DNSName: !GetAtt StaticSiteCloudfront.DomainName
     StaticSiteCloudfront:
       Type: AWS::CloudFront::Distribution
       DependsOn:
         - StaticSite
       Properties:
         DistributionConfig:
+          PriceClass: PriceClass_200
           Comment: CloudFront to S3
           Origins:
             - DomainName: !Join
@@ -61,10 +81,20 @@ resources:
           ViewerCertificate:
             AcmCertificateArn: ${self:custom.certificateArn}
             SslSupportMethod: sni-only
-    StaticSite:
+    StaticSiteWWWRedirect:
       Type: AWS::S3::Bucket
       Properties:
         AccessControl: PublicRead
+        BucketName: www.${self:custom.siteName}
+        WebsiteConfiguration:
+          RedirectAllRequestsTo:
+            HostName: ${self:custom.siteName}
+            Protocol: https
+    StaticSite:
+      Type: AWS::S3::Bucket
+      Properties:
+        VersioningConfiguration:
+          Status: Enabled
         BucketName: ${self:custom.siteName}
         WebsiteConfiguration:
           IndexDocument: index.html
