@@ -7,13 +7,18 @@ import Popover from 'react-bootstrap/Popover';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Button from 'react-bootstrap/Button';
 import Badge from 'react-bootstrap/Badge';
+import Leaderboard from './Leaderboard';
+import InputGroup from 'react-bootstrap/InputGroup';
+import FormControl from 'react-bootstrap/FormControl';
+import {name} from '../lib/Api';
 
 const instructionsPopover = (
     <Popover id="popover-basic">
         <Popover.Title as="h3">Instructions</Popover.Title>
         <Popover.Content>
             Type the Pokémon&apos;s name in the input box below. Select guess when you think you are correct. The color of the text will turn red if your wrong.
-            If you are correct a new Pokémon will be shown. Hit skip if you do not know the answer. The previous pokemon is shown on the upper left of the game display.<br/>
+            If you are correct a new Pokémon will be shown. Hit skip if you do not know the answer. The previous pokemon is shown on the upper left of the game display.
+            Your spelling can be a little bit off and still be correct.<br/>
             <strong>Shortcuts</strong> <br/>
             Enter -&gt; Submit <br/>
             / -&gt; Skip
@@ -54,13 +59,16 @@ class Game extends Component {
             prevPokemonImage: props.prevPokemonImage,
             prevPokemonName: props.prevPokemonName,
             score: props.score,
-            isCorrect: props.isCorrect
+            isCorrect: props.isCorrect,
+            username: props.username
         };
 
         this.guessPokemon = this.guessPokemon.bind(this);
         this.skipPokemon = this.skipPokemon.bind(this);
         this.restartGame = this.restartGame.bind(this);
         this.handleChange = this.handleChange.bind(this);
+        this.updateUsername = this.updateUsername.bind(this);
+        this.handleUsernameChange = this.handleUsernameChange.bind(this);
         this.handleKeyPress = this.handleKeyPress.bind(this);
         this.startGame = this.startGame.bind(this);
     }
@@ -84,6 +92,10 @@ class Game extends Component {
 
     setPrevPokemonName(name) {
         this.setState(() => ({ prevPokemonName: name.charAt(0).toUpperCase() + name.slice(1)}));  // Setting prev pokemon name
+    }
+
+    setUsername(name) {
+        this.setState(() => ({ username: name}));  // Setting users username
     }
 
     async guessPokemon() {
@@ -115,6 +127,7 @@ class Game extends Component {
         this.setPokemonImage(session['CurrentPokemon']['BWImageUrl'], session['NextPokemon']['BWImageUrl'], prevPokemon['OriginalImageUrl']);
         this.setScore(session['Score']);
         this.setPrevPokemonName(prevPokemon['Name']);
+        this.setUsername(session['UserName']);
         this.setState(() => ({ guess: guess }));
     }
 
@@ -129,6 +142,15 @@ class Game extends Component {
         if (this.state.isCorrect === false) {
             this.setState(() => ({ isCorrect: true }));
         }
+    }
+
+    handleUsernameChange(e) {
+        const value = e.target.value;
+        this.setUsername(value);
+    }
+
+    async updateUsername() {
+        await name(this.state.username);
     }
 
     async handleKeyPress(event) {
@@ -146,8 +168,8 @@ class Game extends Component {
         this.setState(() => ({ outcome: '', guess: 0 }));
     }
 
-    render() {
 
+    render() {
         return (
             <div className="container">
                 <div className="row">
@@ -162,7 +184,9 @@ class Game extends Component {
                                     </div>
                                     <div className="col-md-4 mx-auto game-display restart-display">
                                         <OverlayTrigger placement="top" overlay={restartPopover}>
-                                            <Button onClick={this.restartGame} variant="danger">Restart</Button>
+                                            <Button onClick={this.restartGame} variant="danger">
+                                                <i className="fa fa-lg fa-refresh" aria-hidden="true"/>
+                                            </Button>
                                         </OverlayTrigger>
                                     </div>
                                     <div className="col-md-4 mx-auto game-display instruction-display">
@@ -171,6 +195,7 @@ class Game extends Component {
                                         </OverlayTrigger>
                                     </div>
                                 </div>
+                                <div className="mt-2"/>
                                 <div className="row mx-auto">
                                     <div className="col-md-3 game-display pokemon-image-prev">
                                         <Img
@@ -208,6 +233,24 @@ class Game extends Component {
                                     <button className="btn btn-lg btn-danger  btn-block"
                                         onClick={this.skipPokemon}>Skip</button>
                                 </div>
+                                <div className="mt-5"/>
+
+                                <InputGroup className="mb-3">
+                                    <InputGroup.Prepend>
+                                        <InputGroup.Text id="basic-addon3">
+                                            Username
+                                        </InputGroup.Text>
+                                    </InputGroup.Prepend>
+                                    <FormControl
+                                        id="basic-url" aria-describedby="basic-addon3" value={this.state.username}
+                                        onChange={this.handleUsernameChange}
+                                    />
+                                    <InputGroup.Append>
+                                        <Button onClick={this.updateUsername} variant="outline-success">Change</Button>
+                                    </InputGroup.Append>
+                                </InputGroup>
+                                <div className="mt-5"/>
+                                <Leaderboard/>
                             </div>
                         }
                     </div>
@@ -225,7 +268,8 @@ Game.defaultProps = {
     prevPokemonImage: '',
     prevPokemonName: '',
     score: 0,
-    isCorrect: true
+    isCorrect: true,
+    username: ''
 };
 
 Game.propTypes = {
@@ -236,7 +280,8 @@ Game.propTypes = {
     prevPokemonImage: PropTypes.string,
     prevPokemonName: PropTypes.string,
     score: PropTypes.number,
-    isCorrect: PropTypes.bool
+    isCorrect: PropTypes.bool,
+    username: PropTypes.string
 };
 
 export default Game;

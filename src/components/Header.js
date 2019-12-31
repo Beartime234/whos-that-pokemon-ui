@@ -5,7 +5,7 @@ const Header = (props) => (
     <nav className="header navbar navbar-dark bg-dark">
         <div className="container">
             <div className="row m-auto">
-                <i className="fa fa-gamepad fa-3x text-white my-auto"/>
+                <i className="fa fa-gamepad fa-2x text-white my-auto"/>
                 <div className="h4 ml-3 my-auto text-light" href="/">{props.title}</div>
             </div>
         </div>
