@@ -163,7 +163,7 @@ class Game extends Component {
                                     </div>
                                     <div className="col-md-4 mx-auto game-display restart-display">
                                         <OverlayTrigger placement="top" overlay={restartPopover}>
-                                            <Button onClick={this.restartGame} variant="danger">
+                                            <Button variant={'danger'} onClick={() => { if (window.confirm('Are you sure you wish to restart your game?')) this.restartGame(); } }>
                                                 <i className="fa fa-lg fa-refresh" aria-hidden="true"/>
                                             </Button>
                                         </OverlayTrigger>
