@@ -47,6 +47,10 @@ resources:
         DistributionConfig:
           PriceClass: PriceClass_100
           Comment: CloudFront to S3
+          CustomErrorResponses:
+            - ErrorCode: 404
+              ResponseCode: 404
+              ResponsePagePath: /index.html
           Origins:
             - DomainName: !Join
                 - '.'
@@ -98,6 +102,7 @@ resources:
         BucketName: ${self:custom.siteName}
         WebsiteConfiguration:
           IndexDocument: index.html
+          ErrorDocument: index.html
     StaticSiteS3BucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
