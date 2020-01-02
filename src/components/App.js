@@ -1,6 +1,6 @@
 import React from 'react';
 import Header from './Header';
-import Game from './Game';
+import Navigation from './Navigation';
 
 const App = () => {
     return (
@@ -8,7 +8,7 @@ const App = () => {
             <Header title="Who's That Pokémon!" />
             <div className="mt-5"/>
             <div className="mt-5">
-                <Game />
+                <Navigation/>
             </div>
         </div>
 

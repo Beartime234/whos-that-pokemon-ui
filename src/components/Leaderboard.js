@@ -1,21 +1,45 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { leaderboard } from '../lib/Api';
+import {leaderboard, name} from '../lib/Api';
+import InputGroup from 'react-bootstrap/InputGroup';
+import FormControl from 'react-bootstrap/FormControl';
+import Button from 'react-bootstrap/Button';
+import {GameEngine} from '../lib/GameEngine';
+
+const gameEngine = new GameEngine();
 
 class Leaderboard extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            username: '',
             list: []
         };
+        this.updateUsername = this.updateUsername.bind(this);
+        this.handleUsernameChange = this.handleUsernameChange.bind(this);
     }
 
     async componentDidMount() {
+        const session = await gameEngine.gameSession.session;
         const res = await leaderboard();
         const leaderboardArray = res['Leaderboard'];
         this.setState({
-            list:leaderboardArray
+            list:leaderboardArray,
+            username: session['UserName']
         });
+    }
+
+    setUsername(name) {
+        this.setState(() => ({ username: name}));  // Setting users username
+    }
+
+    handleUsernameChange(e) {
+        const value = e.target.value;
+        this.setUsername(value);
+    }
+
+    async updateUsername() {
+        await name(this.state.username);
     }
 
     render() {
@@ -23,6 +47,20 @@ class Leaderboard extends Component {
 
         return (
             <div className="container leaderboard">
+                <InputGroup className="mb-3">
+                    <InputGroup.Prepend>
+                        <InputGroup.Text id="basic-addon3">
+                            Username
+                        </InputGroup.Text>
+                    </InputGroup.Prepend>
+                    <FormControl
+                        id="basic-url" aria-describedby="basic-addon3" value={this.state.username}
+                        onChange={this.handleUsernameChange}
+                    />
+                    <InputGroup.Append>
+                        <Button onClick={this.updateUsername} variant="outline-success">Confirm</Button>
+                    </InputGroup.Append>
+                </InputGroup>
                 <LeaderboardHeader />
                 <ColumnHeader />
                 { userlist }
