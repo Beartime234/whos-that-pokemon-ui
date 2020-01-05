@@ -14,7 +14,9 @@ class Leaderboard extends Component {
         super(props);
         this.state = {
             username: '',
-            list: []
+            list: [],
+            confirmText: 'Confirm',
+            confirmButtonStyle: 'outline-success'
         };
         this.updateUsername = this.updateUsername.bind(this);
         this.handleUsernameChange = this.handleUsernameChange.bind(this);
@@ -35,12 +37,20 @@ class Leaderboard extends Component {
     }
 
     handleUsernameChange(e) {
+        this.setState(() => ({confirmText: 'Confirm', confirmButtonStyle: 'outline-success'}));
         const value = e.target.value;
         this.setUsername(value);
     }
 
     async updateUsername() {
-        await name(this.state.username);
+        this.setState(() => ({confirmText: 'Loading...', confirmButtonStyle: 'outline-success'}));
+        try {
+            await name(this.state.username);
+        } catch (e) {
+            this.setState(() => ({confirmText: 'Error', confirmButtonStyle: 'danger'}));
+            return;
+        }
+        this.setState(() => ({confirmText: 'Success', confirmButtonStyle: 'success'}));
     }
 
     render() {
@@ -59,7 +69,7 @@ class Leaderboard extends Component {
                         onChange={this.handleUsernameChange}
                     />
                     <InputGroup.Append>
-                        <Button onClick={this.updateUsername} variant="outline-success">Confirm</Button>
+                        <Button onClick={this.updateUsername} variant={this.state.confirmButtonStyle}>{this.state.confirmText}</Button>
                     </InputGroup.Append>
                 </InputGroup>
                 <LeaderboardHeader />

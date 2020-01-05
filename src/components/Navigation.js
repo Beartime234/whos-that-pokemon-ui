@@ -9,14 +9,6 @@ import Leaderboard from './Leaderboard';
 import Button from 'react-bootstrap/Button';
 import {withRouter} from 'react-router-dom';
 
-// const useIncrementer = () => {
-//     const [value, setValue] = useState(1);
-//     const increment = () => {
-//         setValue(value + 1);
-//     };
-//     return [value, increment];
-// };
-
 class Navigation extends React.Component {
 
     constructor(props) {
