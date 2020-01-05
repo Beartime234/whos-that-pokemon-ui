@@ -6,9 +6,10 @@ import FormControl from 'react-bootstrap/FormControl';
 import Button from 'react-bootstrap/Button';
 import {GameEngine} from '../lib/GameEngine';
 
-const gameEngine = new GameEngine();
-
 class Leaderboard extends Component {
+
+    gameEngine = new GameEngine();
+
     constructor(props) {
         super(props);
         this.state = {
@@ -20,7 +21,7 @@ class Leaderboard extends Component {
     }
 
     async componentDidMount() {
-        const session = await gameEngine.gameSession.session;
+        const session = await this.gameEngine.gameSession.session;
         const res = await leaderboard();
         const leaderboardArray = res['Leaderboard'];
         this.setState({

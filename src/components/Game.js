@@ -40,9 +40,11 @@ const restartPopover = (
     </Popover>
 );
 
-const gameEngine = new GameEngine();
+// const gameEngine = new GameEngine();
 
 class Game extends Component {
+
+    gameEngine = new GameEngine();
 
     constructor(props) {
         super(props);
@@ -67,7 +69,7 @@ class Game extends Component {
     }
 
     async componentDidMount() {
-        const session = await gameEngine.gameSession.session;
+        const session = await this.gameEngine.gameSession.session;
         this.updateGame(session, '');
     }
 
@@ -88,7 +90,7 @@ class Game extends Component {
     }
 
     async guessPokemon() {
-        const guessOutcome = await gameEngine.guess(this.state.guess);
+        const guessOutcome = await this.gameEngine.guess(this.state.guess);
         const correct = guessOutcome['Correct'];
         if (correct === true) {
             this.setState(() => ({ isCorrect: true }));
@@ -99,12 +101,12 @@ class Game extends Component {
     }
 
     async skipPokemon() {
-        const guessOutcome = await gameEngine.guess('SKIP');
+        const guessOutcome = await this.gameEngine.guess('SKIP');
         this.updateGame(guessOutcome['Session'], '');
     }
 
     async restartGame() {
-        const session = await gameEngine.startNewGame();
+        const session = await this.gameEngine.startNewGame();
         this.updateGame(session, '');
     }
 
@@ -143,7 +145,7 @@ class Game extends Component {
 
 
     startGame() {
-        gameEngine.startNewGame();
+        this.gameEngine.startNewGame();
         this.setState(() => ({ outcome: '', guess: 0 }));
     }
 

@@ -9,6 +9,14 @@ import Leaderboard from './Leaderboard';
 import Button from 'react-bootstrap/Button';
 import {withRouter} from 'react-router-dom';
 
+// const useIncrementer = () => {
+//     const [value, setValue] = useState(1);
+//     const increment = () => {
+//         setValue(value + 1);
+//     };
+//     return [value, increment];
+// };
+
 class Navigation extends React.Component {
 
     constructor(props) {
@@ -17,26 +25,28 @@ class Navigation extends React.Component {
         if (this.props.location.pathname === '/') {
             this.state = {
                 nextPage: 'Leaderboard',
-                currentPage: 'Home'
+                currentPage: 'Home',
+                key: 1
             };
         }
         // eslint-disable-next-line react/prop-types
         if (this.props.location.pathname === '/leaderboard') {
             this.state = {
                 nextPage: 'Home',
-                currentPage: 'Leaderboard'
+                currentPage: 'Leaderboard',
+                key: 1
             };
         }
-
-
         this.changePage = this.changePage.bind(this);
     }
 
     changePage() {
         const currentPageStore = this.state.currentPage;
+        const nextState = this.state.key + 1;
         this.setState(() => ({
             nextPage: currentPageStore,
             currentPage: this.state.nextPage,
+            key: nextState
         }));
     }
 
@@ -45,10 +55,10 @@ class Navigation extends React.Component {
             <div className="container text-center">
                 <Switch>
                     <Route path="/Leaderboard">
-                        <Leaderboard/>
+                        <Leaderboard key={this.state.key}/>
                     </Route>
                     <Route path="/">
-                        <Game/>
+                        <Game key={this.state.key}/>
                     </Route>
                 </Switch>
                 <div className='mt-5'/>
